@@ -1,15 +1,13 @@
 package com.codingame.gameengine.core;
 
-import java.lang.reflect.Type;
-
-import com.google.inject.AbstractModule;
-import com.google.inject.Injector;
-import com.google.inject.Key;
-import com.google.inject.Provides;
-import com.google.inject.Singleton;
+import com.google.inject.*;
 import com.google.inject.util.Types;
 
+import java.lang.reflect.Type;
+
 class GameEngineModule extends AbstractModule {
+
+    private String classPathPrefix;
 
     @Override
     protected void configure() {
@@ -17,12 +15,12 @@ class GameEngineModule extends AbstractModule {
 
     @SuppressWarnings("unchecked")
     private Class<? extends AbstractPlayer> getPlayerClass() throws ClassNotFoundException {
-        return (Class<? extends AbstractPlayer>) Class.forName("com.codingame.game.Player");
+        return (Class<? extends AbstractPlayer>) Class.forName(classPathPrefix + ".Player");
     }
 
     @SuppressWarnings("unchecked")
     private Class<? extends AbstractReferee> getRefereeClass() throws ClassNotFoundException {
-        return (Class<? extends AbstractReferee>) Class.forName("com.codingame.game.Referee");
+        return (Class<? extends AbstractReferee>) Class.forName(classPathPrefix + ".Referee");
     }
 
     @Provides
@@ -49,5 +47,9 @@ class GameEngineModule extends AbstractModule {
         GameManager<AbstractPlayer> gameManager = (GameManager<AbstractPlayer>) injector.getInstance(Key.get(type));
 
         return gameManager;
+    }
+
+    public void setClassPathPrefix(String classPathPrefix) {
+        this.classPathPrefix = classPathPrefix;
     }
 }

@@ -1,13 +1,8 @@
 package com.codingame.gameengine.runner;
 
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.OutputStream;
-import java.io.PipedInputStream;
-import java.io.PipedOutputStream;
-import java.io.PrintStream;
-
 import com.codingame.gameengine.core.RefereeMain;
+
+import java.io.*;
 
 class RefereeAgent extends Agent {
 
@@ -22,6 +17,8 @@ class RefereeAgent extends Agent {
     private OutputStream processStdin = null;
     private InputStream processStdout = null;
     private InputStream processStderr = null;
+
+    private String refereePackagePrefix;
 
     public RefereeAgent() {
         super();
@@ -55,7 +52,11 @@ class RefereeAgent extends Agent {
 
         Thread t = new Thread() {
             public void run() {
-                RefereeMain.start(agentStdin, new PrintStream(agentStdout));
+                if (refereePackagePrefix != null && !refereePackagePrefix.isEmpty()) {
+                    RefereeMain.start(agentStdin, new PrintStream(agentStdout), refereePackagePrefix);
+                } else {
+                    RefereeMain.start(agentStdin, new PrintStream(agentStdout));
+                }
             }
         };
 
@@ -122,5 +123,9 @@ class RefereeAgent extends Agent {
             processStdout = null;
         }
         return null;
+    }
+
+    public void setRefereePackagePrefix(String refereePackagePrefix) {
+        this.refereePackagePrefix = refereePackagePrefix;
     }
 }

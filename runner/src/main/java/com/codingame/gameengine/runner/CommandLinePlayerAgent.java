@@ -57,7 +57,7 @@ class CommandLinePlayerAgent extends Agent {
 
     /**
      * Launch the agent. After the call, agent is ready to process input / output
-     * 
+     *
      * @throws Exception
      *             if an error occurs
      */

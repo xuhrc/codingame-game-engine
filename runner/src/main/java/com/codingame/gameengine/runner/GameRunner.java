@@ -1,5 +1,14 @@
 package com.codingame.gameengine.runner;
 
+import com.codingame.gameengine.runner.Command.InputCommand;
+import com.codingame.gameengine.runner.Command.OutputCommand;
+import com.codingame.gameengine.runner.dto.AgentDto;
+import com.codingame.gameengine.runner.dto.GameResult;
+import com.codingame.gameengine.runner.dto.Tooltip;
+import com.google.gson.Gson;
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
+
 import java.io.IOException;
 import java.io.StringWriter;
 import java.util.ArrayList;
@@ -10,16 +19,6 @@ import java.util.concurrent.ArrayBlockingQueue;
 import java.util.concurrent.BlockingQueue;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
-
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
-
-import com.codingame.gameengine.runner.Command.InputCommand;
-import com.codingame.gameengine.runner.Command.OutputCommand;
-import com.codingame.gameengine.runner.dto.AgentDto;
-import com.codingame.gameengine.runner.dto.GameResult;
-import com.codingame.gameengine.runner.dto.Tooltip;
-import com.google.gson.Gson;
 
 /**
  * The class to use to run local games and display the replay in a webpage on a temporary local server.
@@ -62,6 +61,12 @@ public class GameRunner {
     public GameRunner(Properties properties) {
         try {
             referee = new RefereeAgent();
+
+            if (properties.containsKey("refereePackagePrefix")) {
+                RefereeAgent refereeAgent = (RefereeAgent)referee;
+                refereeAgent.setRefereePackagePrefix(properties.getProperty("refereePackagePrefix"));
+            }
+
             players = new ArrayList<Agent>();
             if (properties != null) {
                 StringWriter sw = new StringWriter();
@@ -226,7 +231,7 @@ public class GameRunner {
 
     }
 
-    private String getJSONResult() {
+    public String getJSONResult() {
         for (int i = 0; i < players.size(); i++) {
             gameResult.ids.put(i, players.get(i).getAgentId());
         }
@@ -432,6 +437,16 @@ public class GameRunner {
      */
     public void start() {
         start(8888);
+    }
+
+    /**
+     * just run the game process, no need to init http server
+     */
+    public void justRunResult() {
+        Properties conf = new Properties();
+        initialize(conf);
+        run();
+
     }
 
     /**
