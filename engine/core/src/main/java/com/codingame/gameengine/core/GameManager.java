@@ -1,5 +1,13 @@
 package com.codingame.gameengine.core;
 
+import com.google.gson.Gson;
+import com.google.gson.JsonObject;
+import com.google.inject.Inject;
+import com.google.inject.Provider;
+import com.google.inject.Singleton;
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
+
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.PrintStream;
@@ -11,15 +19,6 @@ import java.util.Properties;
 import java.util.Scanner;
 import java.util.concurrent.ThreadLocalRandom;
 import java.util.stream.Collectors;
-
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
-
-import com.google.gson.Gson;
-import com.google.gson.JsonObject;
-import com.google.inject.Inject;
-import com.google.inject.Provider;
-import com.google.inject.Singleton;
 
 /**
  * The <code>GameManager</code> takes care of running each turn of the game and computing each visual frame of the replay. It provides many utility
@@ -264,7 +263,7 @@ public final class GameManager<T extends AbstractPlayer> {
         OutputData data = new OutputData(OutputCommand.INFOS);
         out.println(data);
 
-        if (newTurn && getPlayerCount() > 1 && prevGameSummary != null) {
+        if (newTurn && getPlayerCount() >= 1 && prevGameSummary != null) {
             OutputData summary = new OutputData(OutputCommand.SUMMARY);
             summary.addAll(prevGameSummary);
             out.println(summary);

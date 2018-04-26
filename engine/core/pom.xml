@@ -21,7 +21,6 @@
 			<url>http://central.maven.org/maven2/</url>
 		</repository>
 
-
 		<repository>
 			<id>android</id>
 			<name>rdm maven repository</name>
