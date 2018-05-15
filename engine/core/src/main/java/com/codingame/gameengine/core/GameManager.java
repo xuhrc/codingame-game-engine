@@ -38,7 +38,7 @@ public final class GameManager<T extends AbstractPlayer> {
     private static final int VIEW_DATA_HARD_QUOTA = 1024 * 1024;
     
     private List<T> players;
-    private int maxTurns = 400;
+    private int maxTurns = 600;
     private int turnMaxTime = 50;
     private int firstTurnMaxTime = 1000;
     private Integer turn = null;

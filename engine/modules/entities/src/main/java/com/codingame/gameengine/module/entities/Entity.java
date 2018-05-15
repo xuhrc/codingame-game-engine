@@ -27,9 +27,9 @@ public abstract class Entity<T extends Entity<?>> {
     }
 
     Entity() {
-        id = ++GraphicEntityModule.ENTITY_COUNT;
+        id = GraphicEntityModule.getEntityCount() + 1;
+        GraphicEntityModule.plusEntityCount();
         state = new EntityState();
-
     }
 
     @SuppressWarnings("unchecked")

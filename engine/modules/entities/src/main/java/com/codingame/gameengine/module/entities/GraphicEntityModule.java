@@ -1,20 +1,16 @@
 package com.codingame.gameengine.module.entities;
 
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Map.Entry;
-import java.util.Optional;
-import java.util.stream.Collectors;
-import java.util.stream.Stream;
-
 import com.codingame.gameengine.core.AbstractPlayer;
 import com.codingame.gameengine.core.GameManager;
 import com.codingame.gameengine.core.Module;
 import com.google.inject.Inject;
 import com.google.inject.Provider;
 import com.google.inject.Singleton;
+
+import java.util.*;
+import java.util.Map.Entry;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 /**
  * The GraphicEntityModule takes care of displaying and animating graphical entities on the replay of the game.
@@ -29,8 +25,7 @@ public class GraphicEntityModule implements Module {
     //JAVA
     //TODO: masks
     //TODO: extra properties for Texts (text wrapping, alignement, ...)
-
-    static int ENTITY_COUNT = 0;
+    private static ThreadLocal<Integer> entityCount;
 
     private List<SpriteSheetLoader> newSpriteSheets;
     private List<Entity<?>> newEntities;
@@ -54,8 +49,25 @@ public class GraphicEntityModule implements Module {
         lockWorld = false;
         worldStates = new HashMap<>();
         currentWorldState = new WorldState("0");
+        entityCount = new ThreadLocal<>();
 
         gameManager.registerModule(this);
+    }
+
+    public static int getEntityCount() {
+        if (entityCount.get() == null) {
+            reInitEntityCount();
+        }
+
+        return entityCount.get();
+    }
+
+    public static void reInitEntityCount() {
+        entityCount.set(0);
+    }
+
+    public static void plusEntityCount() {
+        entityCount.set(entityCount.get() + 1);
     }
 
     /**

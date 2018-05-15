@@ -6,11 +6,11 @@ import java.io.*;
 
 class RefereeAgent extends Agent {
 
-    public static final int REFEREE_MAX_BUFFER_SIZE_EXTRA = 100_000;
+    public static final int REFEREE_MAX_BUFFER_SIZE_EXTRA = 300_000;
     public static final int REFEREE_MAX_BUFFER_SIZE = 30_000;
     private boolean lastRefereeByteIsCarriageReturn = false;
 
-    private PipedInputStream agentStdin = new PipedInputStream(100_000);
+    private PipedInputStream agentStdin = new PipedInputStream(REFEREE_MAX_BUFFER_SIZE_EXTRA);
     private PipedOutputStream agentStdout = new PipedOutputStream();
     private PipedOutputStream agentStderr = new PipedOutputStream();
 
@@ -25,8 +25,8 @@ class RefereeAgent extends Agent {
 
         try {
             processStdin = new PipedOutputStream(agentStdin);
-            processStdout = new PipedInputStream(agentStdout, 100_000);
-            processStderr = new PipedInputStream(agentStderr, 100_000);
+            processStdout = new PipedInputStream(agentStdout, REFEREE_MAX_BUFFER_SIZE_EXTRA);
+            processStderr = new PipedInputStream(agentStderr, REFEREE_MAX_BUFFER_SIZE_EXTRA);
         } catch (IOException e) {
             throw new RuntimeException("Cannot initialize Referee Agent");
         }

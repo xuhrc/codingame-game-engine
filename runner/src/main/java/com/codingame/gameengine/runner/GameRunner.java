@@ -1,5 +1,6 @@
 package com.codingame.gameengine.runner;
 
+import com.codingame.gameengine.module.entities.GraphicEntityModule;
 import com.codingame.gameengine.runner.Command.InputCommand;
 import com.codingame.gameengine.runner.Command.OutputCommand;
 import com.codingame.gameengine.runner.dto.AgentDto;
@@ -135,100 +136,104 @@ public class GameRunner {
     }
 
     private void run() {
-        referee.execute();
+        try{
+            referee.execute();
 
-        bootstrapPlayers();
+            bootstrapPlayers();
 
-        readInitFrameErrors();
+            readInitFrameErrors();
 
-        Command initCommand = new Command(OutputCommand.INIT);
-        initCommand.addLine(players.size());
+            Command initCommand = new Command(OutputCommand.INIT);
+            initCommand.addLine(players.size());
 
-        // If the referee has input data (i.e. value for seed)
-        if (gameResult.refereeInput != null) {
-            try (Scanner scanner = new Scanner(gameResult.refereeInput)) {
-                while (scanner.hasNextLine()) {
-                    initCommand.addLine((scanner.nextLine()));
+            // If the referee has input data (i.e. value for seed)
+            if (gameResult.refereeInput != null) {
+                try (Scanner scanner = new Scanner(gameResult.refereeInput)) {
+                    while (scanner.hasNextLine()) {
+                        initCommand.addLine((scanner.nextLine()));
+                    }
                 }
             }
-        }
 
-        referee.sendInput(initCommand.toString());
-        int round = 0;
-        while (true) {
-            GameTurnInfo turnInfo = readGameInfo(round);
-            boolean validTurn = turnInfo.isComplete();
+            referee.sendInput(initCommand.toString());
+            int round = 0;
+            while (true) {
+                GameTurnInfo turnInfo = readGameInfo(round);
+                boolean validTurn = turnInfo.isComplete();
 
-            if (validTurn) {
-                gameResult.outputs.get("referee").add(turnInfo.get(InputCommand.INFOS).orElse(null));
-                gameResult.summaries.add(turnInfo.get(InputCommand.SUMMARY).orElse(null));
-            }
-
-            if ((validTurn) && (!turnInfo.get(InputCommand.SCORES).isPresent())) {
-                NextPlayerInfo nextPlayerInfo = new NextPlayerInfo(
-                        turnInfo.get(InputCommand.NEXT_PLAYER_INFO).orElse(null));
-                String nextPlayerOutput = getNextPlayerOutput(nextPlayerInfo,
-                        turnInfo.get(InputCommand.NEXT_PLAYER_INPUT).orElse(null));
-
-                for (Agent a : players) {
-                    gameResult.outputs.get(String.valueOf(a.getAgentId())).add(a.getAgentId() == nextPlayerInfo.nextPlayer ? nextPlayerOutput : null);
+                if (validTurn) {
+                    gameResult.outputs.get("referee").add(turnInfo.get(InputCommand.INFOS).orElse(null));
+                    gameResult.summaries.add(turnInfo.get(InputCommand.SUMMARY).orElse(null));
                 }
 
-                if (nextPlayerOutput != null) {
-                    log.info("\t=== Read from player");
-                    log.info(nextPlayerOutput);
-                    log.info("\t=== End Player");
-                    sendPlayerOutput(nextPlayerOutput, nextPlayerInfo.nbLinesNextOutput);
+                if ((validTurn) && (!turnInfo.get(InputCommand.SCORES).isPresent())) {
+                    NextPlayerInfo nextPlayerInfo = new NextPlayerInfo(
+                            turnInfo.get(InputCommand.NEXT_PLAYER_INFO).orElse(null));
+                    String nextPlayerOutput = getNextPlayerOutput(nextPlayerInfo,
+                            turnInfo.get(InputCommand.NEXT_PLAYER_INPUT).orElse(null));
+
+                    for (Agent a : players) {
+                        gameResult.outputs.get(String.valueOf(a.getAgentId())).add(a.getAgentId() == nextPlayerInfo.nextPlayer ? nextPlayerOutput : null);
+                    }
+
+                    if (nextPlayerOutput != null) {
+                        log.info("\t=== Read from player");
+                        log.info(nextPlayerOutput);
+                        log.info("\t=== End Player");
+                        sendPlayerOutput(nextPlayerOutput, nextPlayerInfo.nbLinesNextOutput);
+                    } else {
+                        sendTimeOut();
+                    }
+                }
+
+                readError(referee);
+                if (!validTurn) {
+                    gameResult.views.add(null);
                 } else {
-                    sendTimeOut();
+                    gameResult.views.add(turnInfo.get(InputCommand.VIEW).orElse(null));
+
+                    turnInfo.get(InputCommand.UINPUT).ifPresent(line -> {
+                        gameResult.uinput.add(line);
+                    });
+
+                    turnInfo.get(InputCommand.METADATA).ifPresent(line -> {
+                        gameResult.metadata = line;
+                    });
+
+                    final int currentRound = round;
+                    turnInfo.get(InputCommand.TOOLTIP).ifPresent(line -> {
+                        String[] tooltipData = line.split("\n");
+                        for (int i = 0; i < tooltipData.length / 2; ++i) {
+                            String text = tooltipData[i * 2];
+                            int eventId = Integer.valueOf(tooltipData[i * 2 + 1]);
+                            gameResult.tooltips.add(new Tooltip(text, eventId, currentRound));
+                        }
+                    });
+
+                    turnInfo.get(InputCommand.SCORES).ifPresent(scores -> {
+                        for (String line : scores.split("\n")) {
+                            String[] parts = line.split(" ");
+                            if (parts.length > 1) {
+                                int player = Integer.decode(parts[0]);
+                                int score = Integer.decode(parts[1]);
+                                gameResult.scores.put(player, score);
+                            }
+                        }
+                    });
+                }
+                round++;
+                if (!validTurn || turnInfo.isEndTurn()) {
+                    break;
                 }
             }
 
-            readError(referee);
-            if (!validTurn) {
-                gameResult.views.add(null);
-            } else {
-                gameResult.views.add(turnInfo.get(InputCommand.VIEW).orElse(null));
-
-                turnInfo.get(InputCommand.UINPUT).ifPresent(line -> {
-                    gameResult.uinput.add(line);
-                });
-
-                turnInfo.get(InputCommand.METADATA).ifPresent(line -> {
-                    gameResult.metadata = line;
-                });
-
-                final int currentRound = round;
-                turnInfo.get(InputCommand.TOOLTIP).ifPresent(line -> {
-                    String[] tooltipData = line.split("\n");
-                    for (int i = 0; i < tooltipData.length / 2; ++i) {
-                        String text = tooltipData[i * 2];
-                        int eventId = Integer.valueOf(tooltipData[i * 2 + 1]);
-                        gameResult.tooltips.add(new Tooltip(text, eventId, currentRound));
-                    }
-                });
-
-                turnInfo.get(InputCommand.SCORES).ifPresent(scores -> {
-                    for (String line : scores.split("\n")) {
-                        String[] parts = line.split(" ");
-                        if (parts.length > 1) {
-                            int player = Integer.decode(parts[0]);
-                            int score = Integer.decode(parts[1]);
-                            gameResult.scores.put(player, score);
-                        }
-                    }
-                });
+            for (BlockingQueue<String> queue : queues) {
+                queue.offer(INTERRUPT_THREAD);
             }
-            round++;
-            if (!validTurn || turnInfo.isEndTurn()) {
-                break;
-            }
+        } finally {
+            referee.destroy();
+            GraphicEntityModule.reInitEntityCount();
         }
-
-        for (BlockingQueue<String> queue : queues) {
-            queue.offer(INTERRUPT_THREAD);
-        }
-
     }
 
     public String getJSONResult() {

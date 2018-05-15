@@ -1,25 +1,14 @@
 package com.codingame.gameengine.runner;
 
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.OutputStream;
-import java.io.PipedInputStream;
-import java.io.PipedOutputStream;
-import java.io.PrintStream;
+import javassist.*;
+
+import java.io.*;
 import java.lang.reflect.Constructor;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.lang.reflect.Modifier;
 import java.util.Optional;
 import java.util.Properties;
-
-import javassist.ClassPool;
-import javassist.CodeConverter;
-import javassist.CtClass;
-import javassist.CtConstructor;
-import javassist.CtField;
-import javassist.CtMethod;
-import javassist.Loader;
 
 /**
  * A participating AI written as a Java class.
@@ -28,7 +17,7 @@ public class JavaPlayerAgent extends Agent {
     private JavaAgentThread javaRunnerThread = null;
     private String codeMain = "Player";
 
-    private PipedInputStream agentStdin = new PipedInputStream(100_000);
+    private PipedInputStream agentStdin = new PipedInputStream(RefereeAgent.REFEREE_MAX_BUFFER_SIZE_EXTRA);
     private PipedOutputStream agentStdout = new PipedOutputStream();
     private PipedOutputStream agentStderr = new PipedOutputStream();
 
@@ -47,8 +36,8 @@ public class JavaPlayerAgent extends Agent {
 
         try {
             processStdin = new PipedOutputStream(agentStdin);
-            processStdout = new PipedInputStream(agentStdout, 100_000);
-            processStderr = new PipedInputStream(agentStderr, 100_000);
+            processStdout = new PipedInputStream(agentStdout, RefereeAgent.REFEREE_MAX_BUFFER_SIZE_EXTRA);
+            processStderr = new PipedInputStream(agentStderr, RefereeAgent.REFEREE_MAX_BUFFER_SIZE_EXTRA);
         } catch (IOException e) {
             throw new RuntimeException("Cannot initialize Player Agent", e);
         }

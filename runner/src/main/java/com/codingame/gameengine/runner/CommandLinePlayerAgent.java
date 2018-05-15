@@ -69,5 +69,10 @@ class CommandLinePlayerAgent extends Agent {
 
     @Override
     public void destroy() {
+        try {
+            this.process.destroyForcibly();
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
     }
 }
