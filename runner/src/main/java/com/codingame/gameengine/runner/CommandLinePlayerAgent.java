@@ -71,6 +71,7 @@ class CommandLinePlayerAgent extends Agent {
     public void destroy() {
         try {
             this.process.destroyForcibly();
+
         } catch (Exception e) {
             e.printStackTrace();
         }

@@ -5,7 +5,6 @@ import com.codingame.gameengine.core.GameManager;
 import com.codingame.gameengine.core.Module;
 import com.google.inject.Inject;
 import com.google.inject.Provider;
-import com.google.inject.Singleton;
 
 import java.util.*;
 import java.util.Map.Entry;
@@ -19,7 +18,6 @@ import java.util.stream.Stream;
  * Use it by creating shapes, sprites, texts etc, then commiting their states to a certain moment of the frame. By default, the states are commited
  * automatically at the end of the frame.
  */
-@Singleton
 public class GraphicEntityModule implements Module {
 
     //JAVA
