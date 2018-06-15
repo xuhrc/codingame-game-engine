@@ -528,7 +528,7 @@ public final class GameManager<T extends AbstractPlayer> {
      * @return The formatted string.
      */
     public static String formatSuccessMessage(String message) {
-        return String.format("¤GREEN¤%s§GREEN§", message);
+        return String.format("||GREEN||%s||GREEN||", message);
     }
 
     /**
@@ -539,6 +539,6 @@ public final class GameManager<T extends AbstractPlayer> {
      * @return The formatted string.
      */
     public static String formatErrorMessage(String message) {
-        return String.format("¤RED¤%s§RED§", message);
+        return String.format("||RED||%s||RED||", message);
     }
 }
